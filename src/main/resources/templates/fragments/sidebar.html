@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Sidebar Fragment</title>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:fragment="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-film fa-2x text-white"></i>
+            <h4 class="text-white">Filmothèque</h4>
+        </div>
+        <div class="sidebar-menu">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">
+                        <i class="fas fa-home"></i>
+                        <span>Accueil</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/film/user/catalog}">
+                        <i class="fas fa-film"></i>
+                        <span>Catalogue Films</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/cart/view}">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Mon Panier</span>
+                    </a>
+                </li>
+                
+                <!-- Admin-only links -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/film/all}">
+                        <i class="fas fa-list"></i>
+                        <span>Gérer les Films</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/film/new}">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Ajouter un film</span>
+                    </a>
+                </li>
+                
+                <!-- Login/logout links -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/logout}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Se déconnecter</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Se connecter</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/register}">
+                        <i class="fas fa-user-plus"></i>
+                        <span>S'inscrire</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-footer">
+            <p class="text-white-50 small mb-0">© 2025 Filmothèque</p>
+        </div>
+    </div>
+</body>
+</html> 

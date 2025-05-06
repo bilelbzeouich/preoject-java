@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: html(
+        title=~{::title},
+        links=~{::links},
+        content=~{::content},
+        scripts=~{::scripts})}"
+>
+<head>
+    <title>Modifier un Film</title>
+    <links>
+        <style>
+            .form-container {
+                background-color: white;
+                border-radius: 12px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+            .form-header {
+                margin-bottom: 2rem;
+                border-bottom: 1px solid #e9ecef;
+                padding-bottom: 1rem;
+            }
+            .form-title {
+                font-weight: 600;
+                color: #212529;
+            }
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+            .form-label {
+                font-weight: 500;
+                margin-bottom: 0.5rem;
+            }
+            .form-control, .form-select {
+                border-radius: 8px;
+                padding: 0.75rem 1rem;
+                border: 1px solid #ced4da;
+                transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            }
+            .form-control:focus, .form-select:focus {
+                border-color: #86b7fe;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+            .btn-submit {
+                padding: 0.75rem 2rem;
+                border-radius: 8px;
+                font-weight: 500;
+                transition: all 0.2s ease;
+            }
+            .btn-submit:hover {
+                transform: translateY(-2px);
+            }
+            .required-field::after {
+                content: "*";
+                color: #dc3545;
+                margin-left: 4px;
+            }
+            .form-footer {
+                margin-top: 2rem;
+                display: flex;
+                justify-content: space-between;
+            }
+            .image-preview {
+                width: 100%;
+                height: 200px;
+                border: 1px dashed #ced4da;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1rem;
+                overflow: hidden;
+            }
+            .image-preview img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+            .current-image {
+                margin-bottom: 1rem;
+            }
+        </style>
+    </links>
+    
+    <content>
+        <div class="form-container">
+            <div class="form-header">
+                <h2 class="form-title">
+                    <i class="fas fa-edit me-2"></i>Modifier le film
+                </h2>
+                <p class="text-muted">Modifiez les informations du film et confirmez pour sauvegarder les changements.</p>
+            </div>
+
+            <form action="/film/update" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" th:value="${film.id}">
+                
+                <div class="form-group">
+                    <label for="titre" class="form-label required-field">Titre du film</label>
+                    <input type="text" name="titre" id="titre" class="form-control" 
+                           th:value="${film.titre}" placeholder="Entrez le titre du film" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea rows="5" class="form-control" name="description" id="description" 
+                              placeholder="Entrez une description du film" th:text="${film.description}"></textarea>
+                    <div class="form-text">Décrivez brièvement l'intrigue du film sans révéler la fin.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="annee" class="form-label required-field">Année de parution</label>
+                        <input type="number" min="1950" name="anneeparution" id="annee" 
+                               class="form-control" th:value="${film.anneeparution}" placeholder="Ex: 2023" required>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label for="categorie" class="form-label">Catégorie</label>
+                        <select name="categorie" class="form-select" id="categorie">
+                            <option value="" disabled>Sélectionnez une catégorie</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.nom}"
+                                    th:selected="${film.categorie != null && film.categorie.id == cat.id}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageFile" class="form-label">Image du film</label>
+                    
+                    <div th:if="${film.imageUrl != null && !film.imageUrl.isEmpty()}" class="current-image">
+                        <p class="mb-2"><strong>Image actuelle :</strong></p>
+                        <img th:src="@{'/uploads/' + ${film.imageUrl}}" alt="Image du film" 
+                             class="img-thumbnail" style="max-height: 150px;">
+                    </div>
+                    
+                    <div class="image-preview" id="imagePreview">
+                        <div class="image-preview-placeholder">
+                            <i class="fas fa-image fa-3x mb-2"></i>
+                            <p>Prévisualisation de la nouvelle image</p>
+                        </div>
+                    </div>
+                    
+                    <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+                    <div class="form-text">Laissez vide pour conserver l'image actuelle. Formats acceptés : JPG, PNG, GIF. Taille max : 10 MB.</div>
+                </div>
+
+                <div class="form-footer">
+                    <a href="/film/all" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-submit">
+                        <i class="fas fa-save me-2"></i>Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </content>
+    
+    <scripts>
+        <script>
+            // Image preview
+            document.getElementById('imageFile').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const imagePreview = document.getElementById('imagePreview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.innerHTML = `
+                        <div class="image-preview-placeholder">
+                            <i class="fas fa-image fa-3x mb-2"></i>
+                            <p>Prévisualisation de la nouvelle image</p>
+                        </div>
+                    `;
+                }
+            });
+        </script>
+    </scripts>
+</head>
+<body>
+    <!-- Content will be replaced by the layout template -->
+</body>
+</html> 

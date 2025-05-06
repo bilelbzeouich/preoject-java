@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Filmothèque</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://picsum.photos/id/870/1800/600');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 3rem;
+        }
+        
+        .film-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .film-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .film-image {
+            height: 300px;
+            object-fit: cover;
+        }
+        
+        .section-title {
+            position: relative;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            width: 50px;
+            height: 4px;
+            background-color: #dc3545;
+        }
+        
+        .btn-view-all {
+            border-radius: 30px;
+            padding: 0.5rem 1.5rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animated-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .film-card .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .user-greeting {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-film me-2"></i>Filmothèque</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i>Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/film/all"><i class="fas fa-list me-1"></i>Catalogue</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/film/new"><i class="fas fa-plus-circle me-1"></i>Ajouter un Film</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" href="/register"><i class="fas fa-user-plus me-1"></i>Inscription</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4">Bienvenue sur Filmothèque</h1>
+            <p class="lead">Découvrez notre collection de films soigneusement sélectionnés</p>
+            <a href="/film/all" class="btn btn-danger btn-lg mt-3">Parcourir le catalogue</a>
+        </div>
+    </header>
+
+    <div class="container mb-5">
+        <!-- User Greeting Section -->
+        <div class="user-greeting" sec:authorize="isAuthenticated()">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3>Bonjour, <span sec:authentication="name"></span> !</h3>
+                    <p>Heureux de vous revoir sur Filmothèque. Découvrez nos derniers ajouts et nos recommendations.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/film/all" class="btn btn-outline-primary"><i class="fas fa-film me-2"></i>Voir tous les films</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Films Section -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">Films à l'affiche</h2>
+                <a href="/film/all" class="btn btn-outline-danger btn-view-all">Voir tout</a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3 animated-card" th:each="film, stat : ${featuredFilms}" th:style="'animation-delay: ' + ${stat.index * 0.1} + 's'">
+                    <div class="card film-card">
+                        <span class="badge bg-danger">À l'affiche</span>
+                        <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://picsum.photos/id/1/500/750'}" 
+                             class="card-img-top film-image" alt="Film Image">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${film.titre}">Titre du Film</h5>
+                            <p class="card-text small text-muted">
+                                <span th:text="${film.anneeparution}">2022</span> | 
+                                <span th:text="${film.categorie.nom}">Action</span>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a th:href="@{/film/update/{id}(id=${film.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasRole('ADMIN')">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-info-circle me-1"></i>Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Films Section -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">Derniers ajouts</h2>
+                <a href="/film/all" class="btn btn-outline-danger btn-view-all">Voir tout</a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3 animated-card" th:each="film, stat : ${latestFilms}" th:style="'animation-delay: ' + ${stat.index * 0.1} + 's'">
+                    <div class="card film-card">
+                        <span class="badge bg-success">Nouveau</span>
+                        <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://picsum.photos/id/1/500/750'}" 
+                             class="card-img-top film-image" alt="Film Image">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${film.titre}">Titre du Film</h5>
+                            <p class="card-text small text-muted">
+                                <span th:text="${film.anneeparution}">2022</span> | 
+                                <span th:text="${film.categorie.nom}">Action</span>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a th:href="@{/film/update/{id}(id=${film.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasRole('ADMIN')">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-info-circle me-1"></i>Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-film me-2"></i>Filmothèque</h5>
+                    <p class="small">Une application de gestion de films développée avec Spring Boot.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 small">© 2023 Filmothèque. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
