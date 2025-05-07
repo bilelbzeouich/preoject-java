@@ -1,83 +1,425 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/layout :: head(~{::title}, _)}">
+<head th:replace="~{fragments/layout :: head(~{::title}, ~{::style})}">
     <title>Panier - Filmothèque</title>
+    <style>
+        :root {
+            --primary: #3d56b2;
+            --secondary: #ff5678;
+            --dark: #05101e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #22c55e;
+            --danger: #ff3a5e;
+            --warning: #fbbf24;
+        }
+        
+        /* Section Header */
+        .section-heading {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-icon {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        
+        .section-title {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: #1e293b;
+            margin-bottom: 0;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
+        /* Breadcrumb */
+        .custom-breadcrumb {
+            padding: 1rem 1.5rem;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--primary);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: var(--secondary);
+        }
+        
+        /* Alert Message */
+        .custom-alert {
+            border-radius: 16px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        
+        .alert-danger {
+            background-color: rgba(255, 58, 94, 0.1);
+            color: var(--danger);
+        }
+        
+        .alert-icon {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+        
+        .btn-close {
+            color: inherit;
+            margin-left: auto;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close:hover {
+            opacity: 1;
+        }
+        
+        /* Empty Cart */
+        .empty-cart {
+            background-color: white;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .empty-cart-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .empty-cart-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .empty-cart-text {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .btn-explore {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 0.75rem 1.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-explore:hover {
+            background-color: #2b3f8a;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(61, 86, 178, 0.2);
+        }
+        
+        /* Cart Table */
+        .cart-card {
+            background-color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .cart-table {
+            margin-bottom: 0;
+        }
+        
+        .cart-table th {
+            padding: 1.25rem 1.5rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .cart-table td {
+            padding: 1.25rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .cart-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .cart-table thead tr {
+            background-color: #f8fafc;
+        }
+        
+        .cart-image {
+            width: 70px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .film-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .film-description {
+            color: #64748b;
+            font-size: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        
+        .category-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        
+        .year-text {
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-left: 0.5rem;
+        }
+        
+        .btn-view {
+            background-color: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+            border: none;
+        }
+        
+        .btn-view:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-remove {
+            background-color: rgba(255, 58, 94, 0.1);
+            color: var(--danger);
+            border: none;
+        }
+        
+        .btn-remove:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        /* Card Footer */
+        .cart-footer {
+            background-color: #f8fafc;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .cart-total {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn-continue {
+            background-color: transparent;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-continue:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        .btn-clear {
+            background-color: rgba(255, 58, 94, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clear:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        /* Responsive behavior */
+        @media (max-width: 767px) {
+            .cart-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-continue, .btn-clear {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .cart-footer {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
-<body th:replace="~{fragments/layout :: body(~{::title}, ~{::section})}">
+<body th:replace="~{fragments/layout :: body-navbar(~{::title}, ~{::section}, _)}">
     <section>
         <div class="container py-5">
-            <h2 class="mb-4">
-                <i class="fas fa-shopping-cart me-2 text-primary"></i>
-                Mon Panier
-            </h2>
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb custom-breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/}"><i class="fas fa-home me-1"></i>Accueil</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/film/user/catalog}"><i class="fas fa-film me-1"></i>Catalogue</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mon Panier</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="section-heading mb-4">
+                <i class="fas fa-shopping-cart section-icon"></i>
+                <h2 class="section-title">Mon Panier</h2>
+            </div>
 
             <!-- Success/Error Messages -->
-            <div th:if="${message}" class="alert" th:classappend="${alertClass}" role="alert">
-                <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
-                <span th:text="${message}">Message</span>
+            <div th:if="${message}" class="custom-alert" 
+                 th:classappend="${alertClass == 'alert-success' ? 'alert-success' : 'alert-danger'}" role="alert">
+                <i class="fas" th:classappend="${alertClass == 'alert-success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" 
+                   aria-hidden="true"></i>
+                <span th:text="${message}" class="mx-2">Message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <!-- Empty Cart -->
-            <div th:if="${cartItems.empty}" class="text-center py-5">
-                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
-                <h3>Votre panier est vide</h3>
-                <p class="text-muted">Parcourez notre catalogue et ajoutez des films à votre panier.</p>
-                <a th:href="@{/film/user/catalog}" class="btn btn-primary mt-3">
+            <div th:if="${cartItems.empty}" class="empty-cart">
+                <i class="fas fa-shopping-cart empty-cart-icon"></i>
+                <h3 class="empty-cart-title">Votre panier est vide</h3>
+                <p class="empty-cart-text">
+                    Parcourez notre catalogue et ajoutez des films à votre panier pour les retrouver ici.
+                </p>
+                <a th:href="@{/film/user/catalog}" class="btn btn-explore">
                     <i class="fas fa-film me-2"></i>Explorer le catalogue
                 </a>
             </div>
 
             <!-- Cart Items -->
-            <div th:if="${!cartItems.empty}" class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col" style="width: 100px">Image</th>
-                                    <th scope="col">Film</th>
-                                    <th scope="col">Catégorie</th>
-                                    <th scope="col">Année</th>
-                                    <th scope="col" class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="film : ${cartItems}">
-                                    <td>
-                                        <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://picsum.photos/id/1/500/750'}"
-                                             alt="Film thumbnail" class="img-thumbnail" style="width: 80px; height: 100px; object-fit: cover;">
-                                    </td>
-                                    <td>
-                                        <h6 class="mb-1" th:text="${film.titre}">Titre du film</h6>
-                                        <p class="small text-muted mb-0 text-truncate" style="max-width: 300px;" th:text="${film.description}">Description</p>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-primary" th:text="${film.categorie.nom}">Catégorie</span>
-                                    </td>
-                                    <td th:text="${film.anneeparution}">2022</td>
-                                    <td class="text-end">
-                                        <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-sm btn-outline-primary me-1" title="Voir détails">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a th:href="@{/cart/remove/{id}(id=${film.id})}" class="btn btn-sm btn-outline-danger" title="Retirer du panier">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div th:if="${!cartItems.empty}" class="cart-card">
+                <div class="table-responsive">
+                    <table class="table cart-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 100px">Image</th>
+                                <th>Film</th>
+                                <th>Catégorie</th>
+                                <th>Année</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="film : ${cartItems}">
+                                <td>
+                                    <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&h=750&fit=crop'}"
+                                         alt="Film thumbnail" class="cart-image">
+                                </td>
+                                <td>
+                                    <h6 class="film-title" th:text="${film.titre}">Titre du film</h6>
+                                    <p class="film-description" th:text="${film.description}">Description</p>
+                                </td>
+                                <td>
+                                    <span class="category-badge" th:text="${film.categorie.nom}">Catégorie</span>
+                                </td>
+                                <td>
+                                    <span class="year-text" th:text="${film.anneeparution}">2022</span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-action btn-view" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/cart/remove/{id}(id=${film.id})}" class="btn btn-action btn-remove" title="Retirer du panier">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong th:text="${cartTotal} + ' film' + (${cartTotal} > 1 ? 's' : '') + ' dans votre panier'">1 film dans votre panier</strong>
+                <div class="cart-footer d-flex justify-content-between align-items-center">
+                    <div class="cart-total">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        <span th:text="${cartTotal} + ' film' + (${cartTotal} > 1 ? 's' : '') + ' dans votre panier'">
+                            1 film dans votre panier
+                        </span>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/film/user/catalog}" class="btn btn-outline-secondary">
+                    <div class="cart-actions">
+                        <a th:href="@{/film/user/catalog}" class="btn btn-continue">
                             <i class="fas fa-arrow-left me-2"></i>Continuer les achats
                         </a>
-                        <a th:href="@{/cart/clear}" class="btn btn-outline-danger" 
+                        <a th:href="@{/cart/clear}" class="btn btn-clear" 
                            onclick="return confirm('Êtes-vous sûr de vouloir vider votre panier?')">
                             <i class="fas fa-trash-alt me-2"></i>Vider le panier
                         </a>

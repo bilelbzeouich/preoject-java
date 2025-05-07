@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Réservations - Filmothèque</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-film me-2"></i>Filmothèque</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/film/user/catalog"><i class="fas fa-film me-1"></i>Catalogue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/film/user/catalog"><i class="fas fa-calendar-alt me-1"></i>Séances</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/film/all"><i class="fas fa-cog me-1"></i>Admin</a>
+                    </li>
+                </ul>
+                <div class="d-flex" sec:authorize="!isAuthenticated()">
+                    <a href="/login" class="btn auth-btn btn-login me-2"><i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+                    <a href="/register" class="btn auth-btn btn-signup"><i class="fas fa-user-plus me-1"></i>Inscription</a>
+                </div>
+                <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
+                    <a href="/reservation/my" class="btn auth-btn btn-login me-3"><i class="fas fa-ticket-alt me-1"></i>Réservations</a>
+                    
+                    <div class="dropdown">
+                        <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="d-flex align-items-center justify-content-center rounded-circle me-2" 
+                                 style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--secondary), var(--primary)); box-shadow: 0 3px 8px rgba(61, 86, 178, 0.25);">
+                                <span sec:authentication="name" class="initial text-white fw-bold" style="font-size: 1.1rem;"></span>
+                            </div>
+                            <span class="d-none d-md-block fw-semibold" style="color: #1e293b;" sec:authentication="name"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width: 240px; border-radius: 12px; padding: 0.8rem 0;">
+                            <li class="dropdown-header text-center py-3">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" 
+                                     style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--secondary), var(--primary)); box-shadow: 0 4px 12px rgba(61, 86, 178, 0.3);">
+                                    <span sec:authentication="name" class="initial text-white fw-bold" style="font-size: 1.5rem;"></span>
+                                </div>
+                                <strong class="d-block mb-1" style="color: #1e293b; font-size: 1.1rem;" sec:authentication="name"></strong>
+                                <span class="text-muted small" sec:authentication="principal.authorities" style="font-size: 0.8rem;"></span>
+                            </li>
+                            <li><hr class="dropdown-divider" style="margin: 0.8rem 0;"></li>
+                            <li>
+                                <a class="dropdown-item py-2 px-4 d-flex align-items-center" href="#">
+                                    <i class="fas fa-user me-3" style="color: var(--primary); width: 18px;"></i>
+                                    <span style="font-weight: 500;">Mon profil</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-4 d-flex align-items-center" href="/reservation/my">
+                                    <i class="fas fa-ticket-alt me-3" style="color: var(--primary); width: 18px;"></i>
+                                    <span style="font-weight: 500;">Mes réservations</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-4 d-flex align-items-center" href="#">
+                                    <i class="fas fa-history me-3" style="color: var(--primary); width: 18px;"></i>
+                                    <span style="font-weight: 500;">Historique</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" style="margin: 0.8rem 0;"></li>
+                            <li>
+                                <a class="dropdown-item py-2 px-4 d-flex align-items-center text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt me-3" style="width: 18px;"></i>
+                                    <span style="font-weight: 500;">Déconnexion</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-ticket-alt me-2"></i>Mes Réservations</h2>
+            <a th:href="@{/film/user/catalog}" class="btn btn-primary">
+                <i class="fas fa-film me-2"></i>Réserver un film
+            </a>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(reservations)}" class="text-center p-5">
+                    <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                    <p class="lead">Vous n'avez aucune réservation.</p>
+                    <a th:href="@{/film/user/catalog}" class="btn btn-primary">
+                        <i class="fas fa-film me-2"></i>Parcourir les films
+                    </a>
+                </div>
+                
+                <div th:unless="${#lists.isEmpty(reservations)}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Film</th>
+                                <th>Salle</th>
+                                <th>Date et Heure</th>
+                                <th>Places</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="reservation : ${reservations}">
+                                <td th:text="${reservation.screening.film.titre}"></td>
+                                <td th:text="${reservation.screening.room.name}"></td>
+                                <td th:text="${#temporals.format(reservation.screening.startTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${reservation.numberOfSeats}"></td>
+                                <td th:text="${reservation.totalPrice} + ' €'"></td>
+                                <td>
+                                    <span th:if="${reservation.status.name() == 'PENDING'}" class="badge bg-warning">En attente</span>
+                                    <span th:if="${reservation.status.name() == 'CONFIRMED'}" class="badge bg-success">Confirmée</span>
+                                    <span th:if="${reservation.status.name() == 'CANCELLED'}" class="badge bg-danger">Annulée</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a th:href="@{/reservation/view/{id}(id=${reservation.id})}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:if="${reservation.status.name() == 'PENDING'}" 
+                                           th:href="@{/reservation/cancel/{id}(id=${reservation.id})}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Extract first letter for profile avatar
+        document.addEventListener('DOMContentLoaded', function() {
+            const initials = document.querySelectorAll('.initial');
+            initials.forEach(function(element) {
+                const username = element.textContent.trim();
+                if (username) {
+                    element.textContent = username.charAt(0).toUpperCase();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

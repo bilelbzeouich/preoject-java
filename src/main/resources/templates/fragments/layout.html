@@ -116,9 +116,9 @@
             }
         }
     </style>
-    <th:block th:if="${links != null}" th:replace="~{${links}}"></th:block>
+    <th:block th:replace="${links}"></th:block>
 </head>
-<body th:fragment="body(title, content)">
+<body th:fragment="body-navbar(title, content, scripts)">
     <!-- Sidebar -->
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
     
@@ -128,6 +128,6 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <th:block th:if="${scripts != null}" th:replace="${scripts}"></th:block>
+    <th:block th:replace="${scripts}"></th:block>
 </body>
 </html> 

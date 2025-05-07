@@ -1,36 +1,602 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/layout :: head(~{::title}, _)}">
+<head th:replace="~{fragments/layout :: head(~{::title}, ~{::style})}">
     <title>Administration des Films - Filmothèque</title>
+    <style>
+        :root {
+            --primary: #3d56b2;
+            --secondary: #ff5678;
+            --dark: #1e293b;
+            --light: #f8f9fa;
+            --gray: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+        
+        /* Admin Dashboard Styles */
+        .admin-container {
+            background-color: #f1f5f9;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2rem;
+        }
+        
+        /* Page Header */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--dark);
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-subtitle {
+            color: var(--gray);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f6bda 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 0.9rem 1.8rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 15px rgba(61, 86, 178, 0.15);
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(61, 86, 178, 0.25);
+            background: linear-gradient(135deg, #364da5 0%, var(--primary) 100%);
+            color: white;
+        }
+        
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 18px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-top: 5px solid transparent;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card.primary {
+            border-top-color: var(--primary);
+        }
+        
+        .stat-card.secondary {
+            border-top-color: var(--secondary);
+        }
+        
+        .stat-card.success {
+            border-top-color: var(--success);
+        }
+        
+        .stat-card.warning {
+            border-top-color: var(--warning);
+        }
+        
+        .stat-card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+            font-size: 1.75rem;
+        }
+        
+        .stat-card.primary .stat-card-icon {
+            background-color: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+        }
+        
+        .stat-card.secondary .stat-card-icon {
+            background-color: rgba(255, 86, 120, 0.1);
+            color: var(--secondary);
+        }
+        
+        .stat-card.success .stat-card-icon {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        
+        .stat-card.warning .stat-card-icon {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        /* Search & Filter */
+        .filters-container {
+            background-color: white;
+            border-radius: 18px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .filter-item {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .search-form {
+            position: relative;
+        }
+        
+        .search-input {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 0.9rem 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+            padding-right: 3.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 5px 15px rgba(61, 86, 178, 0.1);
+            border-color: rgba(61, 86, 178, 0.3);
+            background-color: white;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary) 0%, #4f6bda 100%);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(61, 86, 178, 0.15);
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 8px 20px rgba(61, 86, 178, 0.2);
+        }
+        
+        .filter-select {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 0.9rem 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .filter-select:focus {
+            box-shadow: 0 5px 15px rgba(61, 86, 178, 0.1);
+            border-color: rgba(61, 86, 178, 0.3);
+            background-color: white;
+        }
+        
+        /* Films Table */
+        .films-container {
+            overflow: hidden;
+        }
+        
+        .films-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .films-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--dark);
+            position: relative;
+            padding-left: 0.8rem;
+        }
+        
+        .films-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.25rem;
+            height: 1.5rem;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 4px;
+        }
+        
+        .films-card {
+            background-color: white;
+            border-radius: 18px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+        }
+        
+        .films-table {
+            margin-bottom: 0;
+        }
+        
+        .films-table th {
+            padding: 1.25rem 1.5rem;
+            color: var(--gray);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f1f5f9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .films-table td {
+            padding: 1.25rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f8fafc;
+        }
+        
+        .films-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .films-table thead tr {
+            background-color: #f8fafc;
+        }
+        
+        .films-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .films-table tbody tr:hover {
+            background-color: #f8fafc;
+            transform: translateX(5px);
+        }
+        
+        .film-id {
+            font-weight: 600;
+            color: var(--dark);
+            background-color: #f1f5f9;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .film-poster {
+            width: 65px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .films-table tbody tr:hover .film-poster {
+            transform: scale(1.08) rotate(2deg);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .film-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .film-description {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-width: 250px;
+        }
+        
+        .film-year {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        
+        .film-category {
+            background-color: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-action {
+            border-radius: 12px;
+            padding: 0.7rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-view {
+            background-color: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+            border: none;
+        }
+        
+        .btn-view:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(61, 86, 178, 0.2);
+        }
+        
+        .btn-edit {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: none;
+        }
+        
+        .btn-edit:hover {
+            background-color: var(--warning);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(245, 158, 11, 0.2);
+        }
+        
+        .btn-delete {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+        }
+        
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2);
+        }
+        
+        /* No Results */
+        .no-results {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .no-results-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            background-color: #f8fafc;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .no-results-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .no-results-text {
+            color: var(--gray);
+            font-weight: 400;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Pagination Styling */
+        .pagination-container {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .page-item .page-link {
+            border-radius: 10px;
+            border: none;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--dark);
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .page-item .page-link:hover:not(.active) {
+            background-color: #f1f5f9;
+            transform: translateY(-3px);
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
 </head>
-<body th:replace="~{fragments/layout :: body(~{::title}, ~{::section})}">
+<body th:replace="~{fragments/layout :: body(~{::title}, ~{::section}, _)}">
     <section>
-        <div class="container-fluid py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">
-                    <i class="fas fa-film me-2 text-primary"></i>
-                    Administration des Films
-                </h2>
-                <a th:href="@{/film/new}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i>Ajouter un film
+        <div class="container-fluid py-4 animate-fade-in-up">
+            <!-- Page Header -->
+            <div class="admin-header">
+                <div>
+                    <h1 class="dashboard-title">Administration des Films</h1>
+                    <p class="dashboard-subtitle">Gérer votre collection de films en quelques clics</p>
+                </div>
+                <a th:href="@{/film/new}" class="btn btn-add">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Ajouter un film</span>
                 </a>
+            </div>
+            
+            <!-- Stats Row -->
+            <div class="stats-row animate-fade-in-up delay-1">
+                <div class="stat-card primary">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="stat-value" th:text="${films.size()}">125</div>
+                    <div class="stat-label">Films au total</div>
+                </div>
+                
+                <div class="stat-card secondary">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="stat-value" th:text="${categories.size()}">8</div>
+                    <div class="stat-label">Catégories</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">4.8</div>
+                    <div class="stat-label">Note moyenne</div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">1.2k</div>
+                    <div class="stat-label">Utilisateurs actifs</div>
+                </div>
             </div>
 
             <!-- Search & Filter -->
-            <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <form th:action="@{/film/search}" method="post" class="d-flex">
-                        <input type="text" name="titre" class="form-control me-2" placeholder="Rechercher un film..." 
+            <div class="filters-container animate-fade-in-up delay-2">
+                <div class="filter-item">
+                    <div class="filter-label">Rechercher un film</div>
+                    <form th:action="@{/film/search}" method="post" class="search-form">
+                        <input type="text" name="titre" class="form-control search-input" placeholder="Titre, acteur, réalisateur..." 
                                th:value="${searchTerm != null ? searchTerm : ''}">
-                        <button type="submit" class="btn btn-outline-primary">
+                        <button type="submit" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
                     </form>
                 </div>
-                <div class="col-md-6">
-                    <form th:action="@{/film/filterByCategory}" method="post" class="d-flex">
-                        <select name="idcat" class="form-select me-2" onchange="this.form.submit()">
+                <div class="filter-item">
+                    <div class="filter-label">Filtrer par catégorie</div>
+                    <form th:action="@{/film/filterByCategory}" method="post">
+                        <select name="idcat" class="form-select filter-select" onchange="this.form.submit()">
                             <option value="0">Toutes les catégories</option>
                             <option th:each="cat : ${categories}"
                                     th:value="${cat.id}"
@@ -39,57 +605,77 @@
                                 Catégorie
                             </option>
                         </select>
-                        <button type="submit" class="btn btn-outline-primary">
-                            <i class="fas fa-filter"></i>
-                        </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Films Table -->
-            <div class="card shadow-sm">
-                <div class="card-body">
+            <!-- Films Table Section -->
+            <div class="films-container animate-fade-in-up delay-3">
+                <div class="films-header">
+                    <h3 class="films-title">Liste des films</h3>
+                </div>
+                
+                <div class="films-card">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table films-table">
+                            <thead>
                                 <tr>
                                     <th scope="col" width="80">ID</th>
                                     <th scope="col" width="120">Image</th>
                                     <th scope="col">Titre</th>
                                     <th scope="col">Année</th>
                                     <th scope="col">Catégorie</th>
-                                    <th scope="col" width="200">Actions</th>
+                                    <th scope="col" width="280">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="film : ${films}">
-                                    <td th:text="${film.id}">1</td>
+                                    <td><span class="film-id" th:text="${film.id}">1</span></td>
                                     <td>
-                                        <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://picsum.photos/id/1/100/150'}"
-                                             class="img-thumbnail" alt="Film poster" style="width: 60px; height: 90px; object-fit: cover;">
+                                        <img th:src="${film.imageUrl != null ? '/uploads/' + film.imageUrl : 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&h=750&fit=crop'}" 
+                                             class="film-poster" alt="Film poster">
                                     </td>
-                                    <td th:text="${film.titre}">Titre du Film</td>
-                                    <td th:text="${film.anneeparution}">2022</td>
-                                    <td th:text="${film.categorie.nom}">Action</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye me-1"></i>Voir
+                                        <h6 class="film-title" th:text="${film.titre}">Titre du Film</h6>
+                                        <p class="film-description" th:if="${film.description != null}" th:text="${film.description}">Description du film...</p>
+                                    </td>
+                                    <td>
+                                        <span class="film-year" th:text="${film.anneeparution}">2022</span>
+                                    </td>
+                                    <td>
+                                        <span class="film-category" th:text="${film.categorie.nom}">Action</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a th:href="@{/film/detail/{id}(id=${film.id})}" class="btn btn-action btn-view">
+                                                <i class="fas fa-eye"></i>
+                                                <span>Voir</span>
                                             </a>
-                                            <a th:href="@{/film/update/{id}(id=${film.id})}" class="btn btn-sm btn-outline-warning">
-                                                <i class="fas fa-edit me-1"></i>Modifier
+                                            <a th:href="@{/film/update/{id}(id=${film.id})}" class="btn btn-action btn-edit">
+                                                <i class="fas fa-edit"></i>
+                                                <span>Modifier</span>
                                             </a>
-                                            <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn btn-sm btn-outline-danger"
+                                            <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn btn-action btn-delete"
                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film?')">
-                                                <i class="fas fa-trash-alt me-1"></i>Supprimer
+                                                <i class="fas fa-trash-alt"></i>
+                                                <span>Supprimer</span>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
+                                
+                                <!-- Empty State -->
                                 <tr th:if="${films.empty}">
-                                    <td colspan="6" class="text-center py-4">
-                                        <div class="alert alert-info mb-0">
-                                            <i class="fas fa-info-circle me-2"></i>Aucun film trouvé
+                                    <td colspan="6">
+                                        <div class="no-results">
+                                            <div class="no-results-icon">
+                                                <i class="fas fa-film"></i>
+                                            </div>
+                                            <h4 class="no-results-title">Aucun film trouvé</h4>
+                                            <p class="no-results-text">Essayez une autre recherche ou ajoutez un nouveau film à votre collection.</p>
+                                            <a th:href="@{/film/new}" class="btn btn-add">
+                                                <i class="fas fa-plus-circle me-2"></i>Ajouter un film
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -97,6 +683,29 @@
                         </table>
                     </div>
                 </div>
+                
+                <!-- Pagination (example) -->
+                <!--
+                <div class="pagination-container">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-label="Previous">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" aria-label="Next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                -->
             </div>
         </div>
     </section>

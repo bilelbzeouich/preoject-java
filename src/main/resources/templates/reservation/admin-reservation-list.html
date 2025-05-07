@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Réservations - Filmothèque</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+        
+        <!-- Main content -->
+        <div class="main-content">
+            <div th:replace="fragments/header :: header"></div>
+            
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-clipboard-list me-2"></i>Gestion des Réservations</h2>
+                </div>
+                
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="reservationTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                                    <i class="fas fa-clock me-2"></i>En attente
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="confirmed-tab" data-bs-toggle="tab" data-bs-target="#confirmed" type="button" role="tab" aria-controls="confirmed" aria-selected="false">
+                                    <i class="fas fa-check-circle me-2"></i>Confirmées
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-controls="cancelled" aria-selected="false">
+                                    <i class="fas fa-times-circle me-2"></i>Annulées
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="reservationTabsContent">
+                            <!-- Pending Reservations Tab -->
+                            <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                                <div th:if="${#lists.isEmpty(reservations.?[status.name() == 'PENDING'])}" class="text-center p-5">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <p class="lead">Aucune réservation en attente de confirmation.</p>
+                                </div>
+                                
+                                <div th:unless="${#lists.isEmpty(reservations.?[status.name() == 'PENDING'])}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Référence</th>
+                                                <th>Utilisateur</th>
+                                                <th>Film</th>
+                                                <th>Séance</th>
+                                                <th>Places</th>
+                                                <th>Total</th>
+                                                <th>Contact</th>
+                                                <th>Date Réservation</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="reservation : ${reservations.?[status.name() == 'PENDING']}">
+                                                <td th:text="${'#' + reservation.id}"></td>
+                                                <td th:text="${reservation.user.username}"></td>
+                                                <td th:text="${reservation.screening.film.titre}"></td>
+                                                <td>
+                                                    <span th:text="${#temporals.format(reservation.screening.startTime, 'dd/MM/yyyy HH:mm')}"></span><br>
+                                                    <small class="text-muted" th:text="${reservation.screening.room.name}"></small>
+                                                </td>
+                                                <td th:text="${reservation.numberOfSeats}"></td>
+                                                <td th:text="${reservation.totalPrice} + ' €'"></td>
+                                                <td>
+                                                    <small th:if="${reservation.phoneNumber != null}" th:text="${reservation.phoneNumber}"></small>
+                                                    <small th:unless="${reservation.phoneNumber != null}" class="text-muted">Non fourni</small>
+                                                </td>
+                                                <td th:text="${#temporals.format(reservation.reservationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a th:href="@{/reservation/view/{id}(id=${reservation.id})}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a th:href="@{/reservation/confirm/{id}(id=${reservation.id})}" class="btn btn-sm btn-success"
+                                                           onclick="return confirm('Confirmer cette réservation ?');">
+                                                            <i class="fas fa-check"></i>
+                                                        </a>
+                                                        <a th:href="@{/reservation/cancel/{id}(id=${reservation.id})}" class="btn btn-sm btn-danger"
+                                                           onclick="return confirm('Annuler cette réservation ?');">
+                                                            <i class="fas fa-times"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Confirmed Reservations Tab -->
+                            <div class="tab-pane fade" id="confirmed" role="tabpanel" aria-labelledby="confirmed-tab">
+                                <div th:if="${#lists.isEmpty(reservations.?[status.name() == 'CONFIRMED'])}" class="text-center p-5">
+                                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                                    <p class="lead">Aucune réservation confirmée.</p>
+                                </div>
+                                
+                                <div th:unless="${#lists.isEmpty(reservations.?[status.name() == 'CONFIRMED'])}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Référence</th>
+                                                <th>Utilisateur</th>
+                                                <th>Film</th>
+                                                <th>Séance</th>
+                                                <th>Places</th>
+                                                <th>Total</th>
+                                                <th>Contact</th>
+                                                <th>Date Réservation</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="reservation : ${reservations.?[status.name() == 'CONFIRMED']}">
+                                                <td th:text="${'#' + reservation.id}"></td>
+                                                <td th:text="${reservation.user.username}"></td>
+                                                <td th:text="${reservation.screening.film.titre}"></td>
+                                                <td>
+                                                    <span th:text="${#temporals.format(reservation.screening.startTime, 'dd/MM/yyyy HH:mm')}"></span><br>
+                                                    <small class="text-muted" th:text="${reservation.screening.room.name}"></small>
+                                                </td>
+                                                <td th:text="${reservation.numberOfSeats}"></td>
+                                                <td th:text="${reservation.totalPrice} + ' €'"></td>
+                                                <td>
+                                                    <small th:if="${reservation.phoneNumber != null}" th:text="${reservation.phoneNumber}"></small>
+                                                    <small th:unless="${reservation.phoneNumber != null}" class="text-muted">Non fourni</small>
+                                                </td>
+                                                <td th:text="${#temporals.format(reservation.reservationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a th:href="@{/reservation/view/{id}(id=${reservation.id})}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a th:href="@{/reservation/cancel/{id}(id=${reservation.id})}" class="btn btn-sm btn-danger"
+                                                           onclick="return confirm('Annuler cette réservation ?');">
+                                                            <i class="fas fa-times"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cancelled Reservations Tab -->
+                            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
+                                <div th:if="${#lists.isEmpty(reservations.?[status.name() == 'CANCELLED'])}" class="text-center p-5">
+                                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                                    <p class="lead">Aucune réservation annulée.</p>
+                                </div>
+                                
+                                <div th:unless="${#lists.isEmpty(reservations.?[status.name() == 'CANCELLED'])}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Référence</th>
+                                                <th>Utilisateur</th>
+                                                <th>Film</th>
+                                                <th>Séance</th>
+                                                <th>Places</th>
+                                                <th>Total</th>
+                                                <th>Contact</th>
+                                                <th>Date Réservation</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="reservation : ${reservations.?[status.name() == 'CANCELLED']}">
+                                                <td th:text="${'#' + reservation.id}"></td>
+                                                <td th:text="${reservation.user.username}"></td>
+                                                <td th:text="${reservation.screening.film.titre}"></td>
+                                                <td>
+                                                    <span th:text="${#temporals.format(reservation.screening.startTime, 'dd/MM/yyyy HH:mm')}"></span><br>
+                                                    <small class="text-muted" th:text="${reservation.screening.room.name}"></small>
+                                                </td>
+                                                <td th:text="${reservation.numberOfSeats}"></td>
+                                                <td th:text="${reservation.totalPrice} + ' €'"></td>
+                                                <td>
+                                                    <small th:if="${reservation.phoneNumber != null}" th:text="${reservation.phoneNumber}"></small>
+                                                    <small th:unless="${reservation.phoneNumber != null}" class="text-muted">Non fourni</small>
+                                                </td>
+                                                <td th:text="${#temporals.format(reservation.reservationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a th:href="@{/reservation/view/{id}(id=${reservation.id})}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

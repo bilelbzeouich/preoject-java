@@ -13,8 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/film/")
 @AllArgsConstructor
@@ -48,48 +46,26 @@ public class FilmController {
         return "user/catalog";
     }
 
-    @GetMapping("user/filterByCategory")
-    public String filterByCategory(@RequestParam("idcat") int categoryId, Model model) {
-        List<Film> films;
-
-        if (categoryId == 0) {
-            // Show all films if category ID is 0
-            films = iServiceFilm.findAllFilms();
-        } else {
-            // Get the category and filter films
-            Categorie category = iServiceCategorie.findCategorieById(categoryId);
-            films = iServiceFilm.findFilmsByCategory(category);
-        }
-
-        model.addAttribute("films", films);
-        model.addAttribute("categories", iServiceCategorie.findAllCategories());
-        model.addAttribute("selectedCategoryId", categoryId);
-        model.addAttribute("isAdmin", userService.isAdmin());
-
-        return "user/catalog";
-    }
-
     @GetMapping("detail/{id}")
-    public String showFilmDetails(@PathVariable int id, Model model) {
-        if (iServiceFilm.filmExist(id)) {
-            model.addAttribute("film", iServiceFilm.findFilmById(id));
-            model.addAttribute("isAdmin", userService.isAdmin());
-            return "detail";
+    public String showFilmDetail(@PathVariable int id, Model model) {
+        if (!iServiceFilm.filmExist(id)) {
+            return "redirect:/";
         }
-        return "redirect:/film/user/catalog";
+        model.addAttribute("film", iServiceFilm.findFilmById(id));
+        model.addAttribute("isAdmin", userService.isAdmin());
+        return "detail";
     }
 
     @GetMapping("new")
     @PreAuthorize("hasRole('ADMIN')")
-    public String showAddForm(Model model) {
-        model.addAttribute("film", new Film());
+    public String afficheNewForm(Model model) {
         model.addAttribute("categories", iServiceCategorie.findAllCategories());
         return "ajout";
     }
 
     @PostMapping("add")
     @PreAuthorize("hasRole('ADMIN')")
-    public String addFilm(@ModelAttribute Film film, @RequestParam("imageFile") MultipartFile imageFile) {
+    public String add(@ModelAttribute Film film, @RequestParam("imageFile") MultipartFile imageFile) {
         if (!imageFile.isEmpty()) {
             String fileName = fileStorageService.store(imageFile);
             film.setImageUrl(fileName);
@@ -98,9 +74,16 @@ public class FilmController {
         return "redirect:/film/all";
     }
 
+    @GetMapping("delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String delete(@PathVariable int id) {
+        iServiceFilm.deleteFilm(id);
+        return "redirect:/film/all";
+    }
+
     @GetMapping("update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public String showUpdateForm(@PathVariable int id, Model model) {
+    public String afficheUpdateForm(@PathVariable int id, Model model) {
         model.addAttribute("film", iServiceFilm.findFilmById(id));
         model.addAttribute("categories", iServiceCategorie.findAllCategories());
         return "update";
@@ -133,6 +116,15 @@ public class FilmController {
         return "user/catalog";
     }
 
+    @GetMapping("user/search")
+    public String userSearchFilmsByTitleGet(@RequestParam String titre, Model model) {
+        model.addAttribute("films", iServiceFilm.findFilmsByTitle(titre));
+        model.addAttribute("searchTerm", titre);
+        model.addAttribute("categories", iServiceCategorie.findAllCategories());
+        model.addAttribute("isAdmin", userService.isAdmin());
+        return "user/catalog";
+    }
+
     @PostMapping("search")
     public String searchFilmsByTitle(@RequestParam String titre, Model model) {
         model.addAttribute("films", iServiceFilm.findFilmsByTitle(titre));
@@ -142,12 +134,60 @@ public class FilmController {
         return "admin/films";
     }
 
-    @GetMapping("delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String deleteFilm(@PathVariable int id) {
-        if (iServiceFilm.filmExist(id)) {
-            iServiceFilm.deleteFilm(id);
+    @PostMapping("user/filterByCategory")
+    public String userFilterFilmsByCategory(@RequestParam int idcat, Model model) {
+        if (idcat == 0) {
+            // If "Toutes les catégories" is selected, show all films
+            model.addAttribute("films", iServiceFilm.findAllFilms());
+        } else {
+            // Get the category by ID
+            Categorie categorie = iServiceCategorie.findCategorieById(idcat);
+            model.addAttribute("films", iServiceFilm.findFilmsByCategory(categorie));
         }
-        return "redirect:/film/all";
+        model.addAttribute("selectedCategoryId", idcat);
+        model.addAttribute("categories", iServiceCategorie.findAllCategories());
+        model.addAttribute("isAdmin", userService.isAdmin());
+        return "user/catalog";
+    }
+
+    @GetMapping("user/filterByCategory")
+    public String userFilterFilmsByCategoryGet(@RequestParam int idcat, Model model) {
+        // Reuse the same implementation as the POST method
+        return userFilterFilmsByCategory(idcat, model);
+    }
+
+    @PostMapping("filterByCategory")
+    public String filterFilmsByCategory(@RequestParam int idcat, Model model) {
+        if (idcat == 0) {
+            // If "Toutes les catégories" is selected, show all films
+            model.addAttribute("films", iServiceFilm.findAllFilms());
+        } else {
+            // Get the category by ID
+            Categorie categorie = iServiceCategorie.findCategorieById(idcat);
+            model.addAttribute("films", iServiceFilm.findFilmsByCategory(categorie));
+        }
+        model.addAttribute("selectedCategoryId", idcat);
+        model.addAttribute("categories", iServiceCategorie.findAllCategories());
+        model.addAttribute("isAdmin", userService.isAdmin());
+        return "admin/films";
+    }
+
+    @GetMapping("filterByCategory")
+    public String filterFilmsByCategoryGet(@RequestParam int idcat, Model model) {
+        // Reuse the same implementation as the POST method
+        return filterFilmsByCategory(idcat, model);
+    }
+
+    /**
+     * Handles the scenario when a user directly types /film/all in the URL bar
+     * Will redirect authorized users to admin view and unauthorized to user catalog
+     */
+    @GetMapping("all/redirect")
+    public String handleDirectAccess() {
+        if (userService.isAdmin()) {
+            return "redirect:/film/all";
+        } else {
+            return "redirect:/film/user/catalog";
+        }
     }
 }

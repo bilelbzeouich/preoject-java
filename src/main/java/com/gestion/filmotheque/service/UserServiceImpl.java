@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User registerNewUser(String username, String email, String password, String fullName) {
+    public User registerNewUser(String username, String email, String password, String fullName, String phoneNumber) {
         if (existsByUsername(username)) {
             throw new RuntimeException("Username already exists");
         }
@@ -47,6 +47,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setFullName(fullName);
+        user.setPhoneNumber(phoneNumber);
         user.setEnabled(true);
 
         // Assign USER role
@@ -61,8 +62,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User registerNewAdmin(String username, String email, String password, String fullName) {
-        User user = registerNewUser(username, email, password, fullName);
+    public User registerNewAdmin(String username, String email, String password, String fullName, String phoneNumber) {
+        User user = registerNewUser(username, email, password, fullName, phoneNumber);
 
         // Add ADMIN role
         Role adminRole = roleRepository.findByName(ROLE_ADMIN)

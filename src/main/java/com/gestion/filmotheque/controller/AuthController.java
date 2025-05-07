@@ -1,7 +1,7 @@
 package com.gestion.filmotheque.controller;
 
 import com.gestion.filmotheque.entities.Film;
-import com.gestion.filmotheque.service.IServiceFilm;
+import com.gestion.filmotheque.service.FilmService;
 import com.gestion.filmotheque.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +16,9 @@ import java.util.List;
 public class AuthController {
 
     private final UserService userService;
-    private final IServiceFilm filmService;
+    private final FilmService filmService;
 
-    public AuthController(UserService userService, IServiceFilm filmService) {
+    public AuthController(UserService userService, FilmService filmService) {
         this.userService = userService;
         this.filmService = filmService;
     }
@@ -58,6 +58,7 @@ public class AuthController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String fullName,
+            @RequestParam(required = false) String phoneNumber,
             RedirectAttributes redirectAttributes) {
         if (userService.existsByUsername(username)) {
             redirectAttributes.addFlashAttribute("error", "Le nom d'utilisateur existe déjà");
@@ -69,7 +70,7 @@ public class AuthController {
             return "redirect:/register";
         }
 
-        userService.registerNewUser(username, email, password, fullName);
+        userService.registerNewUser(username, email, password, fullName, phoneNumber);
         redirectAttributes.addFlashAttribute("success", "Compte créé avec succès. Veuillez vous connecter.");
         return "redirect:/login";
     }

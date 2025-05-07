@@ -3,13 +3,18 @@ package com.gestion.filmotheque;
 import com.gestion.filmotheque.entities.Categorie;
 import com.gestion.filmotheque.entities.Film;
 import com.gestion.filmotheque.entities.Role;
+import com.gestion.filmotheque.entities.Room;
+import com.gestion.filmotheque.entities.Screening;
 import com.gestion.filmotheque.repository.CategorieRepository;
 import com.gestion.filmotheque.repository.FilmRepository;
 import com.gestion.filmotheque.repository.RoleRepository;
 import com.gestion.filmotheque.repository.UserRepository;
 import com.gestion.filmotheque.service.IServiceCategorie;
 import com.gestion.filmotheque.service.IServiceFilm;
+import com.gestion.filmotheque.service.RoomService;
+import com.gestion.filmotheque.service.ScreeningService;
 import com.gestion.filmotheque.service.UserService;
+import com.gestion.filmotheque.service.FilmService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -163,14 +169,132 @@ public class ProjetD1Application {
     private void createDefaultUsers(UserService userService) {
         // Create admin account if not exists
         if (!userService.existsByUsername("admin")) {
-            userService.registerNewAdmin("admin", "admin@filmotheque.com", "admin123", "Administrateur");
+            userService.registerNewAdmin("admin", "admin@filmotheque.com", "admin123", "Administrateur", null);
             System.out.println("Default admin account created: username=admin, password=admin123");
         }
 
         // Create regular user account if not exists
         if (!userService.existsByUsername("user")) {
-            userService.registerNewUser("user", "user@filmotheque.com", "user123", "Utilisateur Standard");
+            userService.registerNewUser("user", "user@filmotheque.com", "user123", "Utilisateur Standard", null);
             System.out.println("Default user account created: username=user, password=user123");
         }
+    }
+
+    @Bean
+    CommandLineRunner initCinemaRooms(RoomService roomService) {
+        return args -> {
+            // Only initialize if no rooms exist
+            if (roomService.getAllRooms().isEmpty()) {
+                // Create default cinema rooms
+                Room room1 = new Room();
+                room1.setName("Salle 1");
+                room1.setCapacity(120);
+                room1.setDescription("Salle standard pour projections 2D");
+                room1.setHas3D(false);
+                room1.setHasImax(false);
+
+                Room room2 = new Room();
+                room2.setName("Salle 2");
+                room2.setCapacity(100);
+                room2.setDescription("Salle équipée pour projections 3D");
+                room2.setHas3D(true);
+                room2.setHasImax(false);
+
+                Room room3 = new Room();
+                room3.setName("Salle IMAX");
+                room3.setCapacity(200);
+                room3.setDescription("Grande salle avec technologie IMAX et 3D");
+                room3.setHas3D(true);
+                room3.setHasImax(true);
+
+                roomService.saveRoom(room1);
+                roomService.saveRoom(room2);
+                roomService.saveRoom(room3);
+
+                System.out.println("Default cinema rooms created: Salle 1, Salle 2, Salle IMAX");
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner initScreenings(ScreeningService screeningService, RoomService roomService,
+            FilmService filmService) {
+        return args -> {
+            // Only initialize if no screenings exist
+            if (screeningService.getAllScreenings().isEmpty() &&
+                    !roomService.getAllRooms().isEmpty() &&
+                    filmService.findAllFilms().size() > 0) {
+
+                List<Room> rooms = roomService.getAllRooms();
+                List<Film> films = filmService.findAllFilms();
+
+                // Create screenings for the next 7 days
+                LocalDateTime now = LocalDateTime.now();
+                Random random = new Random();
+
+                for (int day = 0; day < 7; day++) {
+                    // Create screenings for this day
+                    LocalDateTime date = now.plusDays(day).withHour(0).withMinute(0).withSecond(0);
+
+                    // Morning screenings (10:00)
+                    for (int i = 0; i < Math.min(3, rooms.size()); i++) {
+                        Room room = rooms.get(i);
+                        Film film = films.get(random.nextInt(films.size()));
+
+                        Screening screening = new Screening();
+                        screening.setFilm(film);
+                        screening.setRoom(room);
+                        screening.setStartTime(date.plusHours(10));
+                        screening.setEndTime(date.plusHours(12)); // Assume 2 hour movies
+                        screening.setPrice(8.50); // Standard morning price
+
+                        screeningService.saveScreening(screening);
+                    }
+
+                    // Afternoon screenings (14:00 and 17:00)
+                    for (int i = 0; i < Math.min(3, rooms.size()); i++) {
+                        Room room = rooms.get(i);
+
+                        // 14:00 screening
+                        Film film1 = films.get(random.nextInt(films.size()));
+                        Screening screening1 = new Screening();
+                        screening1.setFilm(film1);
+                        screening1.setRoom(room);
+                        screening1.setStartTime(date.plusHours(14));
+                        screening1.setEndTime(date.plusHours(16));
+                        screening1.setPrice(10.00); // Standard afternoon price
+
+                        // 17:00 screening
+                        Film film2 = films.get(random.nextInt(films.size()));
+                        Screening screening2 = new Screening();
+                        screening2.setFilm(film2);
+                        screening2.setRoom(room);
+                        screening2.setStartTime(date.plusHours(17));
+                        screening2.setEndTime(date.plusHours(19));
+                        screening2.setPrice(10.00);
+
+                        screeningService.saveScreening(screening1);
+                        screeningService.saveScreening(screening2);
+                    }
+
+                    // Evening screenings (20:00)
+                    for (int i = 0; i < Math.min(3, rooms.size()); i++) {
+                        Room room = rooms.get(i);
+                        Film film = films.get(random.nextInt(films.size()));
+
+                        Screening screening = new Screening();
+                        screening.setFilm(film);
+                        screening.setRoom(room);
+                        screening.setStartTime(date.plusHours(20));
+                        screening.setEndTime(date.plusHours(22));
+                        screening.setPrice(12.00); // Premium evening price
+
+                        screeningService.saveScreening(screening);
+                    }
+                }
+
+                System.out.println("Sample screenings created for the next 7 days");
+            }
+        };
     }
 }

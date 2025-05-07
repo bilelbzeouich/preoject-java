@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réserver une séance - Filmothèque</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+        
+        <!-- Main content -->
+        <div class="main-content">
+            <div th:replace="fragments/header :: header"></div>
+            
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-ticket-alt me-2"></i>Réserver une séance</h2>
+                    <a th:href="@{/screening/film/{id}(id=${screening.film.id})}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour aux séances
+                    </a>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="position-relative">
+                                <img th:if="${screening.film.imageUrl != null && !screening.film.imageUrl.isEmpty()}" 
+                                     th:src="@{'/uploads/' + ${screening.film.imageUrl}}" 
+                                     class="card-img-top" alt="Poster du film">
+                                <img th:if="${screening.film.imageUrl == null || screening.film.imageUrl.isEmpty()}" 
+                                     class="card-img-top" alt="Poster du film">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${screening.film.titre}"></h5>
+                                <p class="card-text text-muted" th:text="${screening.film.anneeparution}"></p>
+                                <p class="card-text" th:text="${screening.film.description}"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Détails de la séance</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <p><strong>Salle:</strong> <span th:text="${screening.room.name}"></span></p>
+                                        <p><strong>Date:</strong> <span th:text="${#temporals.format(screening.startTime, 'dd/MM/yyyy')}"></span></p>
+                                        <p><strong>Heure:</strong> <span th:text="${#temporals.format(screening.startTime, 'HH:mm')}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Prix unitaire:</strong> <span th:text="${screening.price} + ' €'"></span></p>
+                                        <p><strong>Places disponibles:</strong> <span th:text="${availableSeats}"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <form th:action="@{/reservation/create}" method="post">
+                                    <input type="hidden" name="screeningId" th:value="${screening.id}">
+                                    
+                                    <div class="mb-3">
+                                        <label for="numberOfSeats" class="form-label">Nombre de places</label>
+                                        <input type="number" class="form-control" id="numberOfSeats" name="numberOfSeats" 
+                                               th:max="${availableSeats}" min="1" value="1" required>
+                                        <div class="form-text">Maximum <span th:text="${availableSeats}"></span> places disponibles</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phoneNumber" class="form-label">Numéro de téléphone</label>
+                                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" required>
+                                        <div class="form-text">Nous vous contacterons si nécessaire.</div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <span>Votre réservation sera en attente jusqu'à confirmation par un administrateur.</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-ticket-alt me-2"></i>Réserver
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        document.getElementById('numberOfSeats').addEventListener('input', function() {
+            const price = /*[[${screening.price}]]*/ 10;
+            const numberOfSeats = this.value;
+            const totalPrice = price * numberOfSeats;
+            
+            // Add a span for total price if it doesn't exist
+            let totalPriceElement = document.getElementById('totalPrice');
+            if (!totalPriceElement) {
+                const priceLabel = document.querySelector('label[for="numberOfSeats"]');
+                priceLabel.innerHTML += ' <span class="text-primary">Total: <span id="totalPrice"></span></span>';
+                totalPriceElement = document.getElementById('totalPrice');
+            }
+            
+            totalPriceElement.textContent = totalPrice.toFixed(2) + ' €';
+        });
+        
+        // Trigger the input event on page load to set the initial total price
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('numberOfSeats').dispatchEvent(new Event('input'));
+        });
+    </script>
+</body>
+</html> 
