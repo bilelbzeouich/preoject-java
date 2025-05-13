@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: html(
+        title=~{::title},
+        links=~{::links},
+        content=~{::content},
+        scripts=~{::scripts})}"
+>
+<head>
+    <title>Erreur de Suppression</title>
+    <links>
+        <style>
+            .error-container {
+                background-color: white;
+                border-radius: 12px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+            .error-icon {
+                font-size: 3rem;
+                color: #dc3545;
+                margin-bottom: 1rem;
+            }
+            .error-title {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 1rem;
+            }
+            .error-message {
+                margin-bottom: 2rem;
+            }
+            .error-actions {
+                display: flex;
+                gap: 1rem;
+            }
+        </style>
+    </links>
+    
+    <content>
+        <div class="error-container text-center">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="error-title">Impossible de supprimer ce film</h2>
+            <div class="error-message">
+                <p>Ce film ne peut pas être supprimé car il est associé à des séances programmées.</p>
+                <p>Vous devez d'abord supprimer toutes les séances associées à ce film avant de pouvoir le supprimer.</p>
+            </div>
+            <div class="error-actions justify-content-center">
+                <a th:href="@{/film/all}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste des films
+                </a>
+                <a th:if="${filmId != null}" th:href="@{/screening/film/{id}(id=${filmId})}" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>Voir les séances associées
+                </a>
+            </div>
+        </div>
+    </content>
+    
+    <scripts>
+        <!-- No additional scripts needed -->
+    </scripts>
+</head>
+<body>
+    <!-- Content will be replaced by the layout template -->
+</body>
+</html> 

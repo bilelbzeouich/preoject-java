@@ -10,6 +10,454 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link th:href="@{/css/style.css}" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3d56b2;
+            --secondary: #ff5678;
+            --dark: #05101e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #22c55e;
+            --danger: #ff3a5e;
+            --warning: #fbbf24;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            color: #333;
+        }
+        
+        /* Header & Navigation */
+        .navbar {
+            padding: 1rem 0;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: #333 !important;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+            background-color: rgba(61, 86, 178, 0.1);
+        }
+        
+        .auth-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-login:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-signup {
+            background-color: var(--primary);
+            border: 1px solid var(--primary);
+            color: white;
+        }
+        
+        .btn-signup:hover {
+            background-color: #2b3f8a;
+            border-color: #2b3f8a;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            padding: 8rem 0;
+            margin-bottom: 5rem;
+            background: linear-gradient(135deg, #3d56b2 0%, #5C7AEA 100%);
+            color: white;
+            overflow: hidden;
+            border-radius: 0 0 30% 30% / 30%;
+        }
+        
+        .hero-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1478720568477-152d9b164e26') center/cover;
+            opacity: 0.2;
+            mix-blend-mode: overlay;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .hero-btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* User Greeting */
+        .user-greeting {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 4rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-greeting::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 8px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .greeting-title {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+        }
+        
+        .greeting-text {
+            color: #64748b;
+            margin-bottom: 0;
+            font-size: 1.05rem;
+        }
+        
+        .greeting-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            background: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .greeting-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Section Titles */
+        .section-heading {
+            position: relative;
+            margin-bottom: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .section-title {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: #1e293b;
+            margin-bottom: 0;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -12px;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
+        .btn-view-all {
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 86, 120, 0.1);
+            color: var(--secondary);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view-all:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Film Cards */
+        .film-card {
+            border-radius: 16px;
+            overflow: hidden;
+            border: none;
+            background: white;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .film-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .film-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 280px;
+        }
+        
+        .film-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+        
+        .film-card:hover .film-image {
+            transform: scale(1.1);
+        }
+        
+        .film-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            z-index: 2;
+        }
+        
+        .badge-featured {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .badge-new {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .film-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            padding: 2rem 1.5rem 1rem;
+            color: white;
+        }
+        
+        .film-year {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .film-category {
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            margin-left: 0.5rem;
+        }
+        
+        .film-body {
+            padding: 1.5rem;
+        }
+        
+        .film-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .film-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+        }
+        
+        .btn-film-action {
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-details {
+            flex-grow: 1;
+            background: rgba(61, 86, 178, 0.1);
+            color: var(--primary);
+            border: none;
+        }
+        
+        .btn-details:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-edit {
+            margin-right: 0.75rem;
+            background: rgba(255, 86, 120, 0.1);
+            color: var(--secondary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .btn-edit:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 4rem 0 2rem;
+            margin-top: 5rem;
+        }
+        
+        .footer-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        .footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 400px;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .social-icon:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            margin-top: 3rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -22,13 +470,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Accueil</a>
+                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i>Accueil</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/film/user/catalog"><i class="fas fa-film me-1"></i>Catalogue</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/film/user/catalog"><i class="fas fa-calendar-alt me-1"></i>Séances</a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                         <a class="nav-link" href="/film/all"><i class="fas fa-cog me-1"></i>Admin</a>
@@ -39,7 +484,7 @@
                     <a href="/register" class="btn auth-btn btn-signup"><i class="fas fa-user-plus me-1"></i>Inscription</a>
                 </div>
                 <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
-                    <a href="/reservation/my" class="btn auth-btn btn-login me-3"><i class="fas fa-ticket-alt me-1"></i>Réservations</a>
+                    <a href="/reservation/my" class="btn auth-btn btn-login me-3"><i class="fas fa-shopping-cart me-1"></i>Reservation</a>
                     
                     <div class="dropdown">
                         <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -67,8 +512,8 @@
                             </li>
                             <li>
                                 <a class="dropdown-item py-2 px-4 d-flex align-items-center" href="/reservation/my">
-                                    <i class="fas fa-ticket-alt me-3" style="color: var(--primary); width: 18px;"></i>
-                                    <span style="font-weight: 500;">Mes réservations</span>
+                                    <i class="fas fa-shopping-cart me-3" style="color: var(--primary); width: 18px;"></i>
+                                    <span style="font-weight: 500;">Mon Reservation</span>
                                 </a>
                             </li>
                             <li>

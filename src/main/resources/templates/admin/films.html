@@ -609,12 +609,20 @@
                 </div>
             </div>
 
-            <!-- Films Table Section -->
-            <div class="films-container animate-fade-in-up delay-3">
+            <!-- Films Section -->
+            <section class="films-container">
                 <div class="films-header">
-                    <h3 class="films-title">Liste des films</h3>
+                    <h3 class="section-title">Films</h3>
+                    <p class="section-description">Gérez votre catalogue de films</p>
                 </div>
-                
+
+                <!-- Informational Alert -->
+                <div class="alert alert-info mb-4" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Information:</strong> Les films associés à des séances programmées ne peuvent pas être supprimés.
+                    Veillez à supprimer d'abord les séances correspondantes avant de tenter de supprimer un film.
+                </div>
+
                 <div class="films-card">
                     <div class="table-responsive">
                         <table class="table films-table">
@@ -656,9 +664,11 @@
                                                 <span>Modifier</span>
                                             </a>
                                             <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn btn-action btn-delete"
-                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film?')">
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="top" 
+                                               title="Attention: Ne peut pas être supprimé si des séances y sont associées"
+                                               th:aria-label="'Supprimer ' + ${film.titre}">
                                                 <i class="fas fa-trash-alt"></i>
-                                                <span>Supprimer</span>
                                             </a>
                                         </div>
                                     </td>
@@ -706,8 +716,19 @@
                     </nav>
                 </div>
                 -->
-            </div>
+            </section>
         </div>
     </section>
+
+    <!-- Add this before the end of the HTML -->
+    <script th:fragment="scripts">
+        // Initialize Bootstrap tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 </body>
 </html> 

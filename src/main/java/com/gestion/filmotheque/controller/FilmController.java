@@ -7,11 +7,13 @@ import com.gestion.filmotheque.service.IServiceCategorie;
 import com.gestion.filmotheque.service.IServiceFilm;
 import com.gestion.filmotheque.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/film/")
@@ -76,9 +78,15 @@ public class FilmController {
 
     @GetMapping("delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public String delete(@PathVariable int id) {
-        iServiceFilm.deleteFilm(id);
-        return "redirect:/film/all";
+    public String delete(@PathVariable int id, Model model) {
+        try {
+            iServiceFilm.deleteFilm(id);
+            return "redirect:/film/all";
+        } catch (DataIntegrityViolationException e) {
+            // Film has relationships that prevent deletion
+            model.addAttribute("filmId", id);
+            return "error/delete-error";
+        }
     }
 
     @GetMapping("update/{id}")

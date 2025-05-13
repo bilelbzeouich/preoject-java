@@ -376,7 +376,7 @@
                     <a href="/register" class="btn auth-btn btn-signup"><i class="fas fa-user-plus me-1"></i>Inscription</a>
                 </div>
                 <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
-                    <a href="/cart/view" class="btn auth-btn btn-login me-3"><i class="fas fa-shopping-cart me-1"></i>Panier</a>
+                    <a href="/cart/view" class="btn auth-btn btn-login me-3"><i class="fas fa-shopping-cart me-1"></i>Reservation</a>
                     
                     <div class="dropdown">
                         <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -479,9 +479,12 @@
                                 <a th:href="@{/film/update/{id}(id=${film.id})}" class="btn btn-film-action btn-edit">
                                     <i class="fas fa-edit me-2"></i>Modifier
                                 </a>
-                                <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn btn-film-action btn-delete" 
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film?')">
-                                    <i class="fas fa-trash-alt me-2"></i>Supprimer
+                                <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn btn-film-action btn-delete"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Attention: Ne peut pas être supprimé si des séances y sont associées">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Supprimer</span>
                                 </a>
                             </div>
                             
@@ -548,6 +551,15 @@
                 if (username) {
                     element.textContent = username.charAt(0).toUpperCase();
                 }
+            });
+        });
+    </script>
+    <script th:fragment="scripts">
+        // Initialize Bootstrap tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
     </script>
